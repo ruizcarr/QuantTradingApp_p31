@@ -88,6 +88,7 @@ def KMeans_Clustering_Monthly(returns, window_size_months):  # Changed window si
         cluster_evolution.iloc[i - window_size_months] = clusters
 
 
+
     cluster_evolution=cluster_evolution.rolling(3).mean()
 
 
