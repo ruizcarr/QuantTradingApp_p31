@@ -206,7 +206,7 @@ class RollingMarkowitzWeights:
         #x0 = np.ones([self.size, 1]) / self.size * 0.1
         x0 = np.ones(self.size) / self.size * 0.1
 
-        def get_results_by_loop(results_by_period_df):
+        def get_results_by_loop(results_by_period_df, x0):
 
             for index,row in results_by_period_df.iterrows():
                 slice_tickers_returns = self.tickers_returns.loc[row['start']:row['end']]
@@ -217,7 +217,7 @@ class RollingMarkowitzWeights:
 
             return results_by_period_df
 
-        def get_results_vectorized(results_by_period_df):
+        def get_results_vectorized(results_by_period_df, x0):
 
             def calculate_weights_for_slice(slice_df):
                 mw = MarkowitzWeights(slice_df, self.volatility_target, self.settings, x0)
@@ -230,8 +230,8 @@ class RollingMarkowitzWeights:
             return results_by_period_df
 
 
-        results_by_period_df = get_results_vectorized(results_by_period_df)
-        #results_by_period_df = get_results_by_loop(results_by_period_df)
+        results_by_period_df = get_results_vectorized(results_by_period_df, x0)
+        #results_by_period_df = get_results_by_loop(results_by_period_df, x0)
 
         #Drop Duplicates
         results_by_period_df.drop_duplicates(subset='end', inplace=True)
