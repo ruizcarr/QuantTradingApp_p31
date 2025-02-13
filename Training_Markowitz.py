@@ -8,7 +8,6 @@ import datetime
 import time
 import os.path
 
-
 # Wider print limits
 pd.set_option("display.max_columns", None)
 pd.set_option('display.width', None)
@@ -26,9 +25,6 @@ from utils import mean_positions
 #Get SETTINGS
 from config import settings,utils
 settings=settings.get_settings() #Edit Settings Dict at file config/settings.py
-
-
-
 
 # MAIN CODE
 def run(settings):

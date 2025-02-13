@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import os
 
 import quantstats
 import webbrowser
@@ -75,10 +76,12 @@ def compute_backtest_vectorized(weights, settings, data_dict):
         if settings['qstats']:
             q_title = 'Cash Backtest Markowitz Vectorized'
             path = "results\\"
-            q_filename = path+ q_title + '.html'
+            q_filename = os.path.abspath(path+ q_title + '.html')
             q_returns = bt_log_dict['portfolio_value_eur'].pct_change()
-            q_benchmark = (closes['ES=F']*exchange_rate).pct_change()
-            quantstats.reports.html(q_returns, benchmark=q_benchmark, output=True, download_filename=q_filename, title=q_title)
+            q_benchmark_ticker='ES=F'
+            q_benchmark = (closes[q_benchmark_ticker]*exchange_rate).pct_change()
+
+            quantstats.reports.html(q_returns, title=q_title,benchmark=q_benchmark,benchmark_title=q_benchmark_ticker,output=q_filename) #
             webbrowser.open(q_filename)
 
         return bt_log_dict,log_history

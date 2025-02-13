@@ -203,7 +203,8 @@ class RollingMarkowitzWeights:
 
 
         #weights_prev = np.zeros(self.size)
-        x0 = np.ones([self.size, 1]) / self.size * 0.1
+        #x0 = np.ones([self.size, 1]) / self.size * 0.1
+        x0 = np.ones(self.size) / self.size * 0.1
 
         def get_results_by_loop(results_by_period_df):
 
@@ -244,73 +245,4 @@ class RollingMarkowitzWeights:
         self.opt_fun_df = results_dayly_df[['opt_fun']]
 
 
-    def compute_ts_ok(self):
-        """
-        Calculates time series of optimal weights and optimization function values.
-
-        This function iterates through periods defined by the `rebalance_p` frequency,
-        calculates optimal weights for each period using the Markowitz model, and
-        upsamples the results to daily frequency.
-
-        Attributes:
-            self.weights_res_df: DataFrame containing weights with start, end dates,
-                                 optimization function value, and weights for each asset.
-            self.train_analytics_res_df: (Optional) DataFrame containing additional
-                                          training period analytics (to be implemented).
-            self.tickers_returns: DataFrame containing historical asset returns.
-            self.resample_p: Resampling frequency (e.g., 'W-FRI' for weekly Fridays).
-            self.window: Lookback window for calculating weights.
-            self.volatility_target: Target volatility for the portfolio.
-            self.settings: Additional settings for the Markowitz model.
-            self.indicators_dict: (Optional) Dictionary of technical indicators.
-            self.weights_df: DataFrame containing daily weights for each asset.
-            self.opt_fun_df: DataFrame containing daily optimization function values.
-            self.size: Number of assets.
-        """
-
-        results_by_period_df = pd.DataFrame()
-        end_of_period_list = get_end_of_period(self.tickers_returns, self.rebalance_p)
-        results_by_period_df['start'] = [self.tickers_returns.loc[:end_of_period].iloc[-self.lookback:].index[0] for end_of_period in end_of_period_list]
-        results_by_period_df ['end']=end_of_period_list
-        #Drop rows where period len is shorter than loockback
-        results_by_period_df = results_by_period_df[(results_by_period_df ['end']-results_by_period_df['start']).dt.days>= self.lookback]
-
-        print('results_by_period_df\n',results_by_period_df)
-
-        def calculate_slice_weights(end_slice):
-            slice_tickers_returns = self.tickers_returns.loc[:end_slice].iloc[-self.lookback:]
-            if len(slice_tickers_returns) >= self.lookback:
-                slice_tickers_returns = slice_tickers_returns[:pd.Timestamp.now()]
-
-                mw = MarkowitzWeights(slice_tickers_returns, self.volatility_target,
-                                      self.settings, x0)
-
-                slice_weights = mw.slice_weights
-                return slice_weights
-
-        # Calculate weights for each period
-        weights_res_np = np.empty((0, self.size + 3))  # Initialize empty array
-        #weights_prev = np.zeros(self.size)
-        x0 = np.ones([self.size, 1]) / self.size * 0.1
-        for end_slice in end_of_period_list:
-            slice_weights = calculate_slice_weights(end_slice)
-            if slice_weights is not None:  # Only append if data is valid
-                print('slice_weights is not None. slice_tickers_returns OK')
-                weights_res_np = np.vstack((weights_res_np, slice_weights))
-                #weights_prev = slice_weights[-1][-self.size:]
-            else:
-                print('slice_weights is None. slice_tickers_returns has small length')
-
-        # Create DataFrame, handle duplicates, set index
-        weights_res_df = pd.DataFrame(data=weights_res_np, columns=['start', 'end', 'opt_fun'] + self.tickers.to_list())
-        weights_res_df.drop_duplicates(subset='end', inplace=True)
-        weights_res_df.set_index('end', inplace=True)
-
-        # Upsample to daily index and fill missing values
-        weights_df = weights_res_df.reindex(self.tickers_returns.index).shift(1)
-        weights_df.fillna(method='ffill', inplace=True)
-
-        # Separate weight and opt_fun DataFrames
-        self.weights_df = weights_df.drop(columns=['start', 'opt_fun'])
-        self.opt_fun_df = weights_df[['opt_fun']]
 

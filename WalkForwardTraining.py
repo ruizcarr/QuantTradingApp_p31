@@ -1,7 +1,7 @@
 # import libraries and functions
 import numpy as np
 import pandas as pd
-import pandas_ta as ta
+#import pandas_ta as ta
 import os.path
 
 import matplotlib.pyplot as plt
@@ -16,7 +16,7 @@ import quantstats as qs
 # extend pandas functionality with mettickers, etc.
 qs.extend_pandas()
 from arch import arch_model
-from sklearn.metrics import r2_score
+#from sklearn.metrics import r2_score
 
 from utils import limit_df_values_diff
 from Strategy import Strategy

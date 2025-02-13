@@ -39,6 +39,8 @@ def run(settings):
     data_dict=data.data_dict
 
 
+
+
     # Get Trained Optimized Parameters from csv File
     wft = WalkForwardTraining(data_ind, settings)
     params_train = get_params_from_csv(settings['path_train']+'params_train.csv',
@@ -54,15 +56,17 @@ def run(settings):
         from Training_Markowitz import apply_pos_constrain
         positions = apply_pos_constrain(positions,settings )
 
+
     #Cash BackTest with Backtrader
     if settings['do_BT'] :
         if verbose: print('\nCash BackTest with Backtrader ')
         _, log_history = compute_backtest_vectorized(positions, settings, data_dict)
 
+
+
         #Get End Of Day Values
         settings['tickers']=list(positions.columns)
         eod_log_history, trading_history= process_log_data(log_history,settings)
-
 
         if verbose:
             print("tickers_closes\n", data.tickers_closes[:-5].tail(10))
