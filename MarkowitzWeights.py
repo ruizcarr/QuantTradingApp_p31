@@ -30,7 +30,8 @@ class MarkowitzWeights:
         self.size = len(tickers_returns.columns)
         self.tickers=tickers_returns.columns
         self.CAGR = np.mean(tickers_returns) * 252
-        self.CAGR = self.CAGR -np.array(list(settings['contango'].values()))/100
+        contango_list=[settings['contango'][ticker] for ticker in self.tickers]
+        self.CAGR = self.CAGR -np.array(contango_list)/100
         self.covariance_matrix = np.cov(tickers_returns.T) * 252
 
 

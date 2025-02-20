@@ -167,6 +167,8 @@ class RollingMarkowitzWeights:
         self.size=len(self.tickers)
         self.indicators_dict=indicators_dict
 
+
+
         self.compute_RollingMarkowitzWeights()
 
 
@@ -230,8 +232,8 @@ class RollingMarkowitzWeights:
             return results_by_period_df
 
 
-        results_by_period_df = get_results_vectorized(results_by_period_df, x0)
-        #results_by_period_df = get_results_by_loop(results_by_period_df, x0)
+        #results_by_period_df = get_results_vectorized(results_by_period_df, x0)
+        results_by_period_df = get_results_by_loop(results_by_period_df, x0)
 
         #Drop Duplicates
         results_by_period_df.drop_duplicates(subset='end', inplace=True)

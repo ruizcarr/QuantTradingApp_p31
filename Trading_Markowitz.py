@@ -39,8 +39,6 @@ def run(settings):
     data_dict=data.data_dict
 
 
-
-
     # Get Trained Optimized Parameters from csv File
     wft = WalkForwardTraining(data_ind, settings)
     params_train = get_params_from_csv(settings['path_train']+'params_train.csv',

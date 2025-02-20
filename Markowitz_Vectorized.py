@@ -140,7 +140,8 @@ def main():
 def compute_optimized_markowitz_d_w_m(tickers_returns, settings):
 
     # Weights Combination xs
-    tickers_bounds = settings['tickers_bounds']
+    tickers_bounds = {ticker: settings['tickers_bounds'][ticker] for ticker in tickers_returns.columns}
+
     weight_sum_lim = settings['exposition_lim']
 
     # Generate Fix weights Combinations to find the best
@@ -249,7 +250,8 @@ def compute_markowitz_loop_over_ps(tickers_returns,xs,settings,strat_period='day
     #Get Markowitz Metrics
 
     # Substract Contango from tickers_returns
-    tickers_returns=tickers_returns-np.array(list(settings['contango'].values()))/100/252
+    contango_list = [settings['contango'][ticker] for ticker in tickers_returns.columns]
+    tickers_returns=tickers_returns-np.array(contango_list )/100/252
 
     markowitz_metrics_dict=compute_markowitz_cov_metrics(tickers_returns,xs,cov_w,volat_target,strat_period)
 

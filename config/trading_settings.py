@@ -18,4 +18,4 @@ settings['qstats'] = True
 settings['do_BT']= True
 settings['offline'] = False
 #settings['tickers_bounds'] ={'ES=F': (-0.0, 0.5), 'NQ=F': (-0, 0.5), 'GC=F': (0.00, 0.5), 'CL=F': (0, 0.2), 'EURUSD=X': (-0.00, 0.00), 'cash': (0, 0.05)}
-
+settings['add_cash'] = True

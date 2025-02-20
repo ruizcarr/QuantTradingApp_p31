@@ -33,7 +33,6 @@ class Data_Ind_Feed:
     def __init__(self,settings):
 
 
-
         # Get Data Instance
         data=Data(settings,settings['tickers'],settings['start'],settings['end'],settings['add_days'],settings['offline'])
 
@@ -74,22 +73,31 @@ class Data:
             print('Off-Line and not File with Saved Data available')
 
 
+
         #Add Next Days for Trading
         if add_days>0:
             self.add_next_days(add_days)
 
-
         # Get Close Prices from data_bundle in the order of tickers
         #self.tickers_closes = pd.DataFrame(data=np.asarray([self.data_bundle[tic, 'Close'] for tic in tickers]).T, columns=tickers, index=self.data_bundle.index)
-        self.tickers_closes = pd.concat([self.data_bundle[tic, 'Close'] for tic in tickers], axis=1)
+        #self.tickers_closes = pd.concat([self.data_bundle[tic, 'Close'] for tic in tickers], axis=1)
 
         # Save data to dictionary for further use
-        self.data_dict = {tick: self.data_bundle[tick] for tick in tickers}
+        self.data_dict = {
+            tick: self.data_bundle[tick]
+            for tick in settings['tickers']
+            if tick in self.data_bundle.columns  # Check if ticker exists!
+        }
 
 
-        if start < self.tickers_closes.index[0].isoformat():  # if start requested is older than available data
+        if start < self.data_bundle.index[0].isoformat():  # if start requested is older than available data
             self.extended_data(self.data_dict, start)
 
+        #Get tickers_closes from dict
+        closes={}
+        for ticker, df in self.data_dict.items():
+            closes[ticker] = df['Close']
+        self.tickers_closes =pd.DataFrame(closes)
 
         #Add Cash
         if settings['add_cash']:
@@ -131,45 +139,17 @@ class Data:
 
 
 
-    def yf_data(self, tickers, start, end,add_days=0):
-        """"Get Closes & Returns from yahoo finance
-                Save OHLC to tickers dict"""
-        # Get Data Bundle
-        tickers_space_sep = " ".join(tickers)
-        data_bundle = yf.download(tickers_space_sep, start, end, group_by='ticker', progress=False).dropna()
-
-        # Drop duplicated in calse
-        data_bundle.drop_duplicates()
-
-        # Datetime Index
-        data_bundle.index = pd.to_datetime(data_bundle.index)
-
-        #Save for further use
-        self.data_bundle = data_bundle
-
-        #Save to csv
-        data_bundle.to_csv(self.db_file)
-
-        #Add Next Days for Trading
-        if add_days>0:
-            self.add_next_days(add_days)
-
-        # Get Close Prices from data_bundle in the order of tickers
-        self.tickers_closes = pd.DataFrame(data=np.asarray([self.data_bundle[tic, 'Close'] for tic in tickers]).T, columns=tickers, index=self.data_bundle.index)
-
-        # Save data to dictionary for further use
-        self.data_dict = {tick: self.data_bundle[tick] for tick in tickers}
-
     def yf_data_bundle(self, tickers, start, end,add_days=0):
         """"Get Closes & Returns from yahoo finance
                 Save OHLC to tickers dict"""
+
         # Get Data Bundle from yf
         tickers_space_sep = " ".join(tickers)
         data_bundle = yf.download(tickers_space_sep, start, end, group_by='ticker', progress=False).dropna()
 
+
         # Convert the index to naive timestamps (no timestamps)
         data_bundle.index = data_bundle.index.tz_localize(None)
-
 
         # Drop duplicated in calse
         data_bundle.drop_duplicates()

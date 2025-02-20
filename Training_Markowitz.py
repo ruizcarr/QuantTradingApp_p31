@@ -204,28 +204,6 @@ def get_vector_positions(tickers_returns, settings, data):
 
 
 
-def optimized_position(positions, vector_positions, upper_pos_lim,tickers_returns, volat_target, weight_lim,weight_sum_lim, cagr_w, strat_period):
-
-    from Markowitz_Vectorized import get_combined_strategy_by_markowitz
-
-    vector_positions = vector_positions.reindex(positions.index)
-    returns=tickers_returns.reindex(positions.index)
-
-    # Create strat_returns_df with n_strats columns
-    strat_names=['scipy','vector']
-    positions_dfs = [positions,vector_positions]
-    strat_returns_df=pd.DataFrame({strat: (pos_df*returns).sum(axis=1)
-                                   for strat, pos_df in zip(strat_names,positions_dfs)})
-    # Concat weights array (n_strats,n_days,n_tickers)
-    strat_weights = np.array([np.array(df) for df in [positions, vector_positions]])
-    weights_comb_array, weights_by_strategy = get_combined_strategy_by_markowitz(
-        strat_returns_df, strat_weights, volat_target, weight_lim,weight_sum_lim, cagr_w, strat_period)
-    comb_positions = pd.DataFrame(weights_comb_array, index=returns.index, columns=returns.columns, dtype=float) * 1.05
-
-
-    comb_positions=comb_positions.clip(upper=upper_pos_lim)
-    return comb_positions, weights_by_strategy
-
 def apply_pos_constrain(positions,settings ):
 
     #Update pos_mult_factor when add_cash
