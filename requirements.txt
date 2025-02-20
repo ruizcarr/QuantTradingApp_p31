@@ -10,3 +10,4 @@ scipy==1.15.1
 scikit-learn==1.6.1
 arch==7.2.0
 joblib==1.4.2
+ipython==8.32.0

@@ -10,6 +10,7 @@ import time
 import quantstats
 import webbrowser
 
+
 # Wider print limits
 pd.set_option("display.max_columns", None)
 pd.set_option('display.width', None)
