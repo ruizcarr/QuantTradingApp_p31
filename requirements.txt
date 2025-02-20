@@ -5,7 +5,7 @@ pytz==2025.1
 altair==5.5.0
 matplotlib==3.10.0
 yfinance==0.2.54
-QuantStats==0.0.61
+QuantStats==0.0.62
 scipy==1.15.1
 scikit-learn==1.6.1
 arch==7.2.0
