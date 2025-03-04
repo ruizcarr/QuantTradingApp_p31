@@ -43,9 +43,8 @@ def run(settings):
     times['get_data']= round(end - start,3)
 
     if settings['verbose']:
-        print(tickers_returns)
+        print(tickers_returns.iloc[:-settings['add_days']])
         print('Data & Indicators Ok',times['get_data'])
-
 
     # TRAINING
 

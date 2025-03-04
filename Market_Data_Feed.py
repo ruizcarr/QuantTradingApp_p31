@@ -17,6 +17,8 @@ qs.extend_pandas()
 from arch import arch_model
 from sklearn.metrics import r2_score
 
+from Euribor_Download import get_euribor_1y_daily
+
 from utils import sigmoid
 
 import webbrowser
@@ -35,8 +37,6 @@ class Data_Ind_Feed:
 
         # Get Data Instance
         data=Data(settings,settings['tickers'],settings['start'],settings['end'],settings['add_days'],settings['offline'])
-
-        print('tickers_returns', data.tickers_returns)
 
         #Get Indicators Instance
         ind=Indicators(data.tickers_returns,settings)
@@ -101,7 +101,10 @@ class Data:
 
         #Add Cash
         if settings['add_cash']:
-            self.tickers_closes['cash']=get_cash_values(self.tickers_closes.index, settings['cash_rate'], cash_init=1000)
+            #self.tickers_closes['cash']=get_cash_values(self.tickers_closes.index, settings['cash_rate'], cash_init=1000)
+            euribor_df=get_euribor_1y_daily().reindex(self.tickers_closes.index, method="ffill")
+            self.tickers_closes['cash'] =1000*(1+euribor_df['Euribor']/255).cumprod()
+
             df=list(self.data_dict.values())[0].copy()
             for col in df.columns:
                  df[col] = self.tickers_closes['cash']

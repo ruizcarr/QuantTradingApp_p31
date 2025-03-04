@@ -17,7 +17,7 @@ settings={
     'add_days': 5,  # Additional Business days for next days position estimation
     'contango': {'ES=F': 1.85, 'NQ=F': 2.35, 'GC=F': 20.0, 'CL=F': 1.64, 'EURUSD=X': 1.00,'cash':0},#Yearly Contango % -  Dif beetween Cash and next Future value 'GC=F': 6.26
     'add_cash':True,
-    'cash_rate': 0.02,
+    #'cash_rate': 0.02,
 
     #Settings for Portfolio Optimization
     #'tickers_bounds': {'ES=F': (0,0.5), 'NQ=F': (-0,0.5), 'GC=F': (0.00,0.5), 'CL=F': (0,1), 'EURUSD=X': (-0,0.0),'cash':(0,0.10)},  # Default Weights Bounds Upper Limit for Each asset at optimization {'ES=F': 0.50, 'NQ=F': 0.50, 'GC=F': 0.50, 'EURUSD=X': 0.25, 'CL=F': 0.25}
