@@ -66,23 +66,7 @@ def main(settings):
         if "data" not in st.session_state:
             st.session_state.data = None
 
-        # Refresh button logic
-        #if st.button("Refresh Data"):
-        #    st.session_state.data = None  # Clear the data, forcing a recompute
-
-        """
-        if st.button("Refresh Data"):
-            # Get the current script's path
-            script_path = sys.argv[0]
-
-            # Start a new Streamlit process in the background
-            subprocess.Popen(["streamlit", "run", script_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
-            # Terminate the current Streamlit process
-            os._exit(0)  # this is the most reliable method for termination.
-        """
-
-        # Compute data if it's not already in session state
+         # Compute data if it's not already in session state
         if st.session_state.data is None:
             #st.write("Computing data...")
             log_history, _, data = compute(settings)  # Replace with your compute function
