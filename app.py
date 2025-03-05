@@ -34,6 +34,8 @@ def main(settings):
     #if check_password():
     if True:
 
+        st.rerun()
+
         # Initialize session_state values
         chart_len_dict = {'Weekly': 5 + 1, 'Monthly': 22 + 1, 'Quarterly': 3 * 22 + 1}
         if 'chart_len_key' not in st.session_state:
