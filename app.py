@@ -3,18 +3,23 @@ import pandas as pd
 import numpy as np
 #from datetime import datetime
 import datetime
+from datetime import date
+from datetime import timedelta
 import time
 import pytz
 import altair as alt
 import matplotlib.pyplot as plt
 import json
+import random
+import subprocess
+import sys
+import os
 
 from check_password import check_password
 
 from Trading_Markowitz import compute,process_log_data
 
-# Import Trading Settings
-from config.trading_settings import settings
+
 
 #For Local Run bellow in the pycharm terminal
 #streamlit run app.py
@@ -46,20 +51,57 @@ def main():
         st.set_page_config(layout="wide", page_title='Quant Trading App')
 
         #Update Settings
+        # Import Trading Settings
+        from config.trading_settings import settings
         settings['verbose']=False
         settings['qstats']=st.session_state.qstats
         settings['do_BT'] = True
 
         #Get Trading results
-        log_history, _, data = compute(settings)
-
+        #log_history, _, data = compute(settings)
         #Get tickers data
-        closes=data.tickers_closes
-        returns=data.tickers_returns
+        #closes=data.tickers_closes
+        #returns=data.tickers_returns
+
+        # Initialize session state for data
+        if "data" not in st.session_state:
+            st.session_state.data = None
+
+        # Refresh button logic
+        #if st.button("Refresh Data"):
+        #    st.session_state.data = None  # Clear the data, forcing a recompute
+
+        if st.button("Refresh Data"):
+            # Get the current script's path
+            script_path = sys.argv[0]
+
+            # Start a new Streamlit process in the background
+            subprocess.Popen(["streamlit", "run", script_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+            # Terminate the current Streamlit process
+            os._exit(0)  # this is the most reliable method for termination.
+
+        # Compute data if it's not already in session state
+        if st.session_state.data is None:
+            st.write("Computing data...")
+            log_history, _, data = compute(settings)  # Replace with your compute function
+            st.session_state.data = (log_history, data)  # Store the results
+
+        # Get data
+        if st.session_state.data:
+            log_history, data = st.session_state.data
+            returns = data.tickers_returns
+            closes = data.tickers_closes
+
+        else:
+            st.write("Click 'Refresh Data' to load data.")
+
 
         #Debug
-        st.write(closes)
-        st.write(returns)
+        #st.write(st.session_state)
+        #st.write(settings['end'])
+        #st.write(closes)
+        #st.write(returns)
 
         #Process Log Data
         eod_log_history,trading_history=process_log_data(log_history,settings)
