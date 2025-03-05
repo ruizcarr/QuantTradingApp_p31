@@ -52,6 +52,9 @@ def main(settings):
         # Set the page layout to wide
         st.set_page_config(layout="wide", page_title='Quant Trading App')
 
+        if st.button("Refresh App"):
+            st.rerun()  # This is the best method for cross platform refresh.
+
         #Update Settings
         # Import Trading Settings
         settings['verbose']=False
@@ -64,8 +67,7 @@ def main(settings):
         #closes=data.tickers_closes
         #returns=data.tickers_returns
 
-        if st.button("Refresh App"):
-            st.rerun()  # This is the best method for cross platform refresh.
+
 
         # Initialize session state for data
         if "data" not in st.session_state:
