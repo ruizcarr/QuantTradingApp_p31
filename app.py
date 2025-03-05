@@ -34,8 +34,7 @@ def main(settings):
     #if check_password():
     if True:
 
-        if st.button("Refresh App"):
-            st.rerun()  # This is the best method for cross platform refresh.
+
 
         # Initialize session_state values
         chart_len_dict = {'Weekly': 5 + 1, 'Monthly': 22 + 1, 'Quarterly': 3 * 22 + 1}
@@ -64,6 +63,9 @@ def main(settings):
         #Get tickers data
         #closes=data.tickers_closes
         #returns=data.tickers_returns
+
+        if st.button("Refresh App"):
+            st.rerun()  # This is the best method for cross platform refresh.
 
         # Initialize session state for data
         if "data" not in st.session_state:
