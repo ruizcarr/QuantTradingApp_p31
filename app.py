@@ -19,7 +19,7 @@ from check_password import check_password
 
 from Trading_Markowitz import compute,process_log_data
 
-
+from config.trading_settings import settings
 
 #For Local Run bellow in the pycharm terminal
 #streamlit run app.py
@@ -29,7 +29,7 @@ from Trading_Markowitz import compute,process_log_data
 
 
 #Main Code
-def main():
+def main(settings):
 
     #if check_password():
     if True:
@@ -52,7 +52,6 @@ def main():
 
         #Update Settings
         # Import Trading Settings
-        from config.trading_settings import settings
         settings['verbose']=False
         settings['qstats']=st.session_state.qstats
         settings['do_BT'] = True
@@ -85,7 +84,7 @@ def main():
 
         # Compute data if it's not already in session state
         if st.session_state.data is None:
-            st.write("Computing data...")
+            #st.write("Computing data...")
             log_history, _, data = compute(settings)  # Replace with your compute function
             st.session_state.data = (log_history, data)  # Store the results
 
@@ -466,7 +465,7 @@ def display_orders(log_history,settings):
         cols[1].write("No Orders Forecast  in the next days")
 
 if __name__ == '__main__':
-    main()
+    main(settings)
 
 
 
