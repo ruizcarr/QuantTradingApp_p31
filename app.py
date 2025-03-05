@@ -11,7 +11,7 @@ import json
 
 from check_password import check_password
 
-from Trading_Markowitz import run,process_log_data
+from Trading_Markowitz import compute,process_log_data
 
 # Import Trading Settings
 from config.trading_settings import settings
@@ -51,11 +51,15 @@ def main():
         settings['do_BT'] = True
 
         #Get Trading results
-        log_history, _, data = run(settings)
+        log_history, _, data = compute(settings)
 
         #Get tickers data
         closes=data.tickers_closes
         returns=data.tickers_returns
+
+        #Debug
+        st.write(closes)
+        st.write(returns)
 
         #Process Log Data
         eod_log_history,trading_history=process_log_data(log_history,settings)

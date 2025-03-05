@@ -21,12 +21,12 @@ warnings.filterwarnings('ignore')
 from WalkForwardTraining import WalkForwardTraining,get_params_from_csv
 import Market_Data_Feed as mdf
 from Backtest_Vectorized import compute_backtest_vectorized
-from Training_Markowitz import process_log_data
+from Training_Markowitz import process_log_data,apply_pos_constrain
 
 # Import Trading Settings
 from config.trading_settings import settings
 
-def run(settings):
+def compute(settings):
 
     start_time = time.time()
 
@@ -52,7 +52,6 @@ def run(settings):
     #Apply Exposition Constraints
     #Exponential factor,Mult factor & Limit maximum/minimum individual position
     if settings['apply_pos_consraints']:
-        from Training_Markowitz import apply_pos_constrain
         positions = apply_pos_constrain(positions,settings )
 
 
@@ -60,8 +59,6 @@ def run(settings):
     if settings['do_BT'] :
         if verbose: print('\nCash BackTest with Backtrader ')
         _, log_history = compute_backtest_vectorized(positions, settings, data_dict)
-
-
 
         #Get End Of Day Values
         settings['tickers']=list(positions.columns)
@@ -157,4 +154,4 @@ def process_log_data_duplicated(log_history,settings):
 
 
 if __name__ == '__main__':
-    run(settings)
+    compute(settings)
