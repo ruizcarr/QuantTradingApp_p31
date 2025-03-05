@@ -71,6 +71,7 @@ def main():
         #if st.button("Refresh Data"):
         #    st.session_state.data = None  # Clear the data, forcing a recompute
 
+        """
         if st.button("Refresh Data"):
             # Get the current script's path
             script_path = sys.argv[0]
@@ -80,6 +81,7 @@ def main():
 
             # Terminate the current Streamlit process
             os._exit(0)  # this is the most reliable method for termination.
+        """
 
         # Compute data if it's not already in session state
         if st.session_state.data is None:
