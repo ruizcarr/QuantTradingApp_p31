@@ -34,7 +34,8 @@ def main(settings):
     #if check_password():
     if True:
 
-        st.rerun()
+        if st.button("Refresh App"):
+            st.rerun()  # This is the best method for cross platform refresh.
 
         # Initialize session_state values
         chart_len_dict = {'Weekly': 5 + 1, 'Monthly': 22 + 1, 'Quarterly': 3 * 22 + 1}
