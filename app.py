@@ -62,6 +62,7 @@ def main(settings):
 
         #Get Trading results
         #log_history, _, data = compute(settings)
+
         #Get tickers data
         #closes=data.tickers_closes
         #returns=data.tickers_returns
