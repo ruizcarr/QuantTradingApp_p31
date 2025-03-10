@@ -21,17 +21,16 @@ settings={
 
     #Settings for Portfolio Optimization
     #'tickers_bounds': {'ES=F': (0,0.5), 'NQ=F': (-0,0.5), 'GC=F': (0.00,0.5), 'CL=F': (0,1), 'EURUSD=X': (-0,0.0),'cash':(0,0.10)},  # Default Weights Bounds Upper Limit for Each asset at optimization {'ES=F': 0.50, 'NQ=F': 0.50, 'GC=F': 0.50, 'EURUSD=X': 0.25, 'CL=F': 0.25}
-    'tickers_bounds': {'ES=F': (-0.0, 0.0), 'NQ=F': (-0, 0.5), 'GC=F': (0.00, 0.5), 'CL=F': (0, 0.2), 'EURUSD=X': (-0.00, 0.00), 'cash': (0, 0.05)},
+    'tickers_bounds': {'ES=F': (-0.0, 0.0), 'NQ=F': (-0, 0.5), 'GC=F': (0.00, 0.5), 'CL=F': (0, 0.1), 'EURUSD=X': (-0.00, 0.0), 'cash': (0, 0.5)},
     'volatility_target': 0.110,#0.110,  #0.113, # 0.135, #0.124,  # 0.125,  # 0.135,  # 0.24#0.115
 
     #Settings for Cash Back Test
     'do_BT': True,
     'startcash': 68000, # 60000, #starting cash EUR
-    'mults':{'ES=F': 5, 'NQ=F': 2, 'GC=F': 10, 'CL=F': 500, 'EURUSD=X': 12500,'cash':1}, # multipliers for e-micro futures (CL mini x500, CL micro x100,
-    'EURUSD_hedge_factor': 0, #Percentage Hedge Exchange Rate Risk 0-1
+    'mults':{'ES=F': 5, 'NQ=F': 2, 'GC=F': 10, 'CL=F': 100, 'EURUSD=X': 12500,'cash':20}, # multipliers for e-micro futures (CL mini x500, CL micro x100,
+    'EURUSD_hedge_factor': 0.0, #Percentage Hedge Exchange Rate Risk 0-1
     'btprint': False,
     'commision': 5, #USD by B/S contract
-
 
     #Exposition Constraints
     'w_sum_max': 1.00,  # Max sum of weights at markovitz calc

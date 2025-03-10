@@ -507,8 +507,16 @@ class Indicators:
         #RSI Sigmoid Weight
         self.rsi_sigmoid_weight=self.rsi_sigmoid(self.rsi)
 
+        #Euribor Indicator Weights
+        from EuriborStudy import get_Euribor_ind
+        # Retrieve Training model and get Euribor Ind
+        Euribor_series = tickers_returns['cash'] * 255 * 100
+        self.Euribor_ind = get_Euribor_ind(Euribor_series)
+
         # Combined Weights
-        self.comb_weights = self.rsi_reverse_keep_weights * self.norm_weights * self.exp_weights #* self.rsi_sigmoid_weight * m_trend_weights #* trend_corr_high#  * rsi_weights * chopp_factor #* boll_pct_weights
+        self.comb_weights = self.rsi_reverse_keep_weights * self.norm_weights * self.exp_weights*self.Euribor_ind #* self.rsi_sigmoid_weight * m_trend_weights #* trend_corr_high#  * rsi_weights * chopp_factor #* boll_pct_weights
+        self.comb_weights['cash']=1
+        self.comb_weights = self.comb_weights/2.75
         self.comb_weights =self.comb_weights.clip(upper=2.5,lower=0)
 
         #Store indicators in a dict

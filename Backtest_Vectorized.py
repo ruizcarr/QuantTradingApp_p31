@@ -197,6 +197,11 @@ def   compute_backtest(weights_div_asset_price,asset_price,opens,highs,lows,clos
     #is_sell_stop =is_sell  #&  (weights!=0)
     exectype.where(~is_sell, 'Stop', inplace=True)
     prices.where(~is_sell, sell_stop_price, inplace=True)
+
+    #Set cash sell orders as Market
+    #if 'cash' in exectype.columns:
+    #    exectype['cash'].where(~is_sell['cash'], 'Market', inplace=True)
+
     #Sell to Market when weights==0
     #is_sell_market = (is_sell & (weights==0))
     #exectype.where(~is_sell_market, 'Market', inplace=True)
