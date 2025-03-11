@@ -144,7 +144,9 @@ class Strategy:
         w = w[w.index.isin(weights_df.index)]
 
         # Apply Pre Optimization with Combined Weights
-        return w * weights_df
+        positions=w * weights_df
+
+        return positions
 
 
     def Returns(self,st_positions,st_tickers_returns):

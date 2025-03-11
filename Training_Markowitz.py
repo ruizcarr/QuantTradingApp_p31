@@ -218,6 +218,14 @@ def apply_pos_constrain(positions,settings ):
     # Limit Position to maximum/minimum individual position
     positions = positions.clip(upper=settings['w_upper_lim'],lower=settings['w_lower_lim'])
 
+    # Limit Upper Cash position by avilable cash not used in futures guaranties
+    if 'cash' in positions.columns:
+        no_cash_pos_sum=positions.sum(axis=1)-positions['cash']
+        futures_guranties=0.20*no_cash_pos_sum
+        #futures_guranties = 1.5 * 0.15  # max futures_guranties
+        available_cash = 1 - futures_guranties
+        positions['cash'] = positions['cash'].clip(upper=available_cash)
+
     return positions
 
 

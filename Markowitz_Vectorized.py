@@ -446,6 +446,7 @@ def compute_markowitz_cov_metrics(returns,xs,cov_w,volat_target,strat_period):
     high_volat_xs = np.where(volatility_xs > volat_target, volatility_xs / volat_target - 1, 0)
     lower_volat = 0.01
     low_volat_xs = np.where(volatility_xs < lower_volat, lower_volat / volatility_xs - 1, 0)
+
     penalties_xs = high_volat_xs + low_volat_xs
 
     #Save values in a dict

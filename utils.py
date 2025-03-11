@@ -112,7 +112,9 @@ def mean_positions(positions, vector_positions, upper_pos_lim,
     positions = overall_f * (positions * sf + vector_positions * vf) / (sf + vf)
 
     # Limit Upper individual position
-    return positions.clip(upper=upper_pos_lim)
+    positions=positions.clip(upper=upper_pos_lim)
+
+    return positions
 
 
 

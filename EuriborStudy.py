@@ -73,7 +73,7 @@ def compute(settings):
     cum_ret=(1+tickers_returns).cumprod()
 
 
-    for ticker in settings['tickers']:
+    for ticker in settings['tickers']+['cash']:
         plot_df=pd.DataFrame()
         plot_df[ticker]=cum_ret[ticker]
         plot_df['Euribor'] = Euribor_series
@@ -157,7 +157,9 @@ def get_Euribor_ind(Euribor_series):
     Euribor_ind = Euribor_ind + 0.25 #0.5 & 1.4 with cash 0.05
     Euribor_ind = Euribor_ind*1.2
     #Euribor_ind=Euribor_ind/Euribor_ind.mean()
-    Euribor_ind['cash'] = 1
+    #Set Indicator for Cash
+    Euribor_ind['cash'] = np.where(Euribor_series>0.005,1.0,0)
+
 
     print('Euribor_ind',Euribor_ind)
 
