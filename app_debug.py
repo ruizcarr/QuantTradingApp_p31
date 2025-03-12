@@ -22,7 +22,7 @@ from Trading_Markowitz import compute,process_log_data
 from config.trading_settings import settings
 
 #For Local Run bellow in the pycharm terminal
-#streamlit run app.py
+#streamlit run app_debug.py
 #Ctrl + c to stop
 #Internet url: https://quanttradingapp.streamlit.app/
 
@@ -59,15 +59,6 @@ def main(settings):
         settings['verbose']=False
         settings['qstats']=st.session_state.qstats
         settings['do_BT'] = True
-
-        #Get Trading results
-        #log_history, _, data = compute(settings)
-
-        #Get tickers data
-        #closes=data.tickers_closes
-        #returns=data.tickers_returns
-
-
 
         # Initialize session state for data
         if "data" not in st.session_state:
@@ -277,7 +268,8 @@ y=alt.Y(col, title='', scale=alt.Scale(domain=[ts[col].min(),ts[col].max()]))
 
 def display_tickers_data(closes,returns,today,settings,sidebar=False,daysback=3*22,data_show='returns',chart=True):
 
-    tickers = settings["tickers"]
+    #tickers = settings["tickers"]
+    tickers = closes.columns
     #cols = st.columns(len(tickers)+1)
     n_col = len(tickers) + 1
     #col_width_list = [2] + [1] * (n_col - 1)
@@ -317,6 +309,7 @@ def display_tickers_data(closes,returns,today,settings,sidebar=False,daysback=3*
         elif ticker == 'CL=F':close_f = f"{close:,.2f}"
         else: close_f=f"{close:,.0f}"
         ret = returns.loc[:today, ticker].iloc[-1]
+
         label=f"**{ticker}**"
         value=close_f
         delta=f"{ret:.1%}"
