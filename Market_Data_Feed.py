@@ -516,8 +516,12 @@ class Indicators:
         # Combined Weights
         self.comb_weights = self.rsi_reverse_keep_weights * self.norm_weights * self.exp_weights*self.Euribor_ind #* self.rsi_sigmoid_weight * m_trend_weights #* trend_corr_high#  * rsi_weights * chopp_factor #* boll_pct_weights
         self.comb_weights['cash'] = self.Euribor_ind['cash']
-        self.comb_weights = self.comb_weights/3
+        #self.comb_weights = self.comb_weights/3.25
+        #self.comb_weights = self.comb_weights / 2
+
         self.comb_weights =self.comb_weights.clip(upper=2.5,lower=0)
+
+
 
         #Store indicators in a dict
         self.indicators_dict={

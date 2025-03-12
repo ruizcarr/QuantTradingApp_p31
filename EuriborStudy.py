@@ -55,7 +55,7 @@ def compute(settings):
     Euribor_series = tickers_returns['cash'] * 255 * 100
     Euribor_ind = get_Euribor_ind(Euribor_series)
 
-    strategy_returns=tickers_returns*Euribor_ind.shift(1)
+    strategy_returns=tickers_returns*Euribor_ind
     strategy_cum_ret = (1 + strategy_returns).cumprod()
     metrics=pd.DataFrame()
     metrics['ticker_CAGR']=tickers_returns.mean()*255
@@ -104,6 +104,21 @@ def get_trained_Euribor_weigths(tickers_returns,folder_path="trained_models", fi
     #Create Euribor_weights
     Euribor_weights = corr_matrix.clip(0)
     Euribor_weights = Euribor_weights/Euribor_weights.sum()
+
+    if True:
+        print('non zero sum corr_matrix',Euribor_weights.sum())
+        non_zero_mean_corr_matrix=Euribor_weights.replace(0, np.nan).mean()
+        print('non zero mean corr_matrix', non_zero_mean_corr_matrix)
+        non_zero_meanofmean_wo_cash_corr_matrix=non_zero_mean_corr_matrix.drop('cash',axis=0).mean()
+        print('non zero mean mean wo cash corr_matrix', non_zero_meanofmean_wo_cash_corr_matrix)
+
+        Euribor_weights = Euribor_weights / non_zero_meanofmean_wo_cash_corr_matrix
+        non_zero_maxofmean_wo_cash_Euribor_weights=Euribor_weights.replace(0, np.nan).mean().drop('cash',axis=0).max()
+        print('non_zero_meanofmean_wo_cash_Euribor_weights',non_zero_maxofmean_wo_cash_Euribor_weights)
+        Euribor_weights = Euribor_weights /non_zero_maxofmean_wo_cash_Euribor_weights
+
+    else:
+        Euribor_weights = Euribor_weights / Euribor_weights.sum()
 
     # Construct the full file path
     file_path = os.path.join(folder_path, filename)
@@ -154,14 +169,34 @@ def get_Euribor_ind(Euribor_series):
     for col in Euribor_weights.columns:
         Euribor_ind[col] = (Euribor_metrics * Euribor_weights[col]).sum(axis=1)
 
-    Euribor_ind = Euribor_ind + 0.25 #0.5 & 1.4 with cash 0.05
-    Euribor_ind = Euribor_ind*1.2
-    #Euribor_ind=Euribor_ind/Euribor_ind.mean()
+    #Keep yesterday value
+    Euribor_ind = Euribor_ind.shift(1)
+
+    if True:
+        #Set index around 1
+        Euribor_ind_mean=Euribor_ind.mean()
+        Euribor_ind=1+(Euribor_ind/2.1-Euribor_ind_mean)
+
+        #Add factor to all values
+        Euribor_ind = Euribor_ind + 0.2  # 0.4 #0.25 & 1.5 with cash 0.5
+
+        #Set Cash Mean to one
+        Euribor_ind['cash'] = Euribor_ind['cash']/Euribor_ind['cash'].mean()
+
+    else:
+        Euribor_ind = Euribor_ind +  0.4 #0.25 & 1.5 with cash 0.5
+
+    #Keep only positive values
+    Euribor_ind = Euribor_ind.clip(lower=0)
+
+    #Avoid peack short signals
+    Euribor_ind = Euribor_ind.rolling(3).mean()
+
     #Set Indicator for Cash
     Euribor_ind['cash'] = np.where(Euribor_series>0.005,1.0,0)
 
 
-    print('Euribor_ind',Euribor_ind)
+    #print('Euribor_ind',Euribor_ind)
 
     return Euribor_ind
 

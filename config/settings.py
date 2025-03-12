@@ -17,24 +17,23 @@ settings={
     'add_days': 5,  # Additional Business days for next days position estimation
     'contango': {'ES=F': 1.85, 'NQ=F': 2.35, 'GC=F': 20.0, 'CL=F': 1.64, 'EURUSD=X': 1.00,'cash':0},#Yearly Contango % -  Dif beetween Cash and next Future value 'GC=F': 6.26
     'add_cash':True,
-    #'cash_rate': 0.02,
 
     #Settings for Portfolio Optimization
     #'tickers_bounds': {'ES=F': (0,0.5), 'NQ=F': (-0,0.5), 'GC=F': (0.00,0.5), 'CL=F': (0,1), 'EURUSD=X': (-0,0.0),'cash':(0,0.10)},  # Default Weights Bounds Upper Limit for Each asset at optimization {'ES=F': 0.50, 'NQ=F': 0.50, 'GC=F': 0.50, 'EURUSD=X': 0.25, 'CL=F': 0.25}
-    'tickers_bounds': {'ES=F': (-0.0, 0.0), 'NQ=F': (-0, 0.5), 'GC=F': (0.00, 0.5), 'CL=F': (0, 0.1), 'EURUSD=X': (-0.00, 0.0), 'cash': (0, 0.5)},
+    'tickers_bounds': {'ES=F': (-0.0, 0.0), 'NQ=F': (-0, 0.5), 'GC=F': (0.00, 0.5), 'CL=F': (0, 0.1), 'EURUSD=X': (-0.00, 0.0), 'cash': (0, 0.3)},
     'volatility_target': 0.110,#0.110,  #0.113, # 0.135, #0.124,  # 0.125,  # 0.135,  # 0.24#0.115
 
     #Settings for Cash Back Test
     'do_BT': True,
     'startcash': 68000, # 60000, #starting cash EUR
-    'mults':{'ES=F': 5, 'NQ=F': 2, 'GC=F': 10, 'CL=F': 100, 'EURUSD=X': 12500,'cash':20}, # multipliers for e-micro futures (CL mini x500, CL micro x100,
+    'mults':{'ES=F': 5, 'NQ=F': 2, 'GC=F': 10, 'CL=F': 500, 'EURUSD=X': 12500,'cash':20}, # multipliers for e-micro futures (CL mini x500, CL micro x100,
     'EURUSD_hedge_factor': 0.0, #Percentage Hedge Exchange Rate Risk 0-1
     'btprint': False,
     'commision': 5, #USD by B/S contract
 
     #Exposition Constraints
-    'w_sum_max': 1.00,  # Max sum of weights at markovitz calc
-    'exposition_lim': 2.5, # Max exposition allowed aka Max strategy_pos sum. When no futures set to 1
+    'w_sum_max': 2.5,  # Max sum of weights at markovitz calc
+    'exposition_lim': 2.5, #2.5, Max exposition allowed aka Max strategy_pos sum. When no futures set to 1
     'w_upper_lim': 1.0,  #0.9, #  Individual Upper Weight Limit
     'w_lower_lim': -0.1,  # Individual Lower Weight Limit
     'pos_exp_factor': 1.05, #1.05 # Position Exponential factor; positions = positions ** settings['pos_exp_factor']
@@ -60,8 +59,8 @@ settings={
     #Post Opt Parameters
     'apply_post_opt': True,  # Calculate Post Optimization and get post_factor
     'trading_volatility_delta': -0.02,  # trading_volatility_target= volatility_target + trading_volatility_delta
-    'volatility_factor_diff_delta': {'up':0.25,'dn':0.25},#0.25,  # .25 #volatility_factor maximum abs diff
-    'vol_factor_max': 2.0, #2.0 #1.85 #1.65, #1.75
+    'volatility_factor_diff_delta': {'up':1,'dn':1},#0.25,  # .25 #volatility_factor maximum abs diff
+    'vol_factor_max': 8.0, #2.0 #1.85 #1.65, #1.75
 
     #After Test Optimization Params
     'apply_after_test_opt': False,  # Calculate After Test Optimization

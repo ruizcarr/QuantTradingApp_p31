@@ -316,16 +316,17 @@ class WalkForwardTraining:
         else:
             params_train['vol__factor']  = 1
 
+
         for _ in range(2):
 
             #Set First Value Without enough data length to 1
-            params_train['vol_factor'].iloc[0]=1
+            #params_train['vol_factor'].iloc[0]=1
 
             #Limit change of values to delta
             params_train['vol_factor'] = limit_df_values_diff(params_train['vol_factor'],delta=self.settings['volatility_factor_diff_delta']) #0.35
 
             #Set value to 1 when CAGR is Low
-            cagr_volat_is_low=(analytics_train['cagr'] + analytics_train['volatility'])<0.05
+            cagr_volat_is_low=(analytics_train['cagr'] + analytics_train['volatility'])<0.01
             params_train['vol_factor'][cagr_volat_is_low]=1
 
             #Limit Upper Limit
@@ -360,6 +361,8 @@ class WalkForwardTraining:
     def PostOptimize(self,params_train,analytics_train):
 
         params_train=self.VolatilityAdjuster(analytics_train ,params_train,do_print=False)
+
+
         params_train=self.KellyAdjuster(analytics_train ,params_train,do_print=False)
 
         params_train['post_factor']=params_train['vol_factor']*params_train['kelly_factor']

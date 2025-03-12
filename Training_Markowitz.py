@@ -206,8 +206,8 @@ def get_vector_positions(tickers_returns, settings, data):
 def apply_pos_constrain(positions,settings ):
 
     #Update pos_mult_factor when add_cash
-    if settings['add_cash']:
-        settings['pos_mult_factor'] = 2 * settings['pos_mult_factor'] * settings['tickers_bounds']['cash'][1] * 10
+    #if settings['add_cash']:
+    #    settings['pos_mult_factor'] = 2 * settings['pos_mult_factor'] * settings['tickers_bounds']['cash'][1] * 10
 
     # Apply Exponential factor keeping position sign
     positions =np.sign(positions) *positions.abs() ** settings['pos_exp_factor']
@@ -215,15 +215,22 @@ def apply_pos_constrain(positions,settings ):
     # Apply Mult factor
     positions = positions * settings['pos_mult_factor']
 
+
+    # Limit Position to maximum of Exposition Allowed
+    positions_sum=positions.sum(axis=1)
+    positions_sum_series = pd.Series(positions_sum, index=positions.index)
+    positions_sum_is_high=positions_sum>settings['exposition_lim']
+    reduced_position=positions.div(positions_sum_series, axis=0)
+    positions.loc[positions_sum_is_high,:]=reduced_position
+
     # Limit Position to maximum/minimum individual position
     positions = positions.clip(upper=settings['w_upper_lim'],lower=settings['w_lower_lim'])
 
-    # Limit Upper Cash position by avilable cash not used in futures guaranties
+    # Limit Upper Cash position by available cash not used in futures guaranties
     if 'cash' in positions.columns:
         no_cash_pos_sum=positions.sum(axis=1)-positions['cash']
-        futures_guranties=0.20*no_cash_pos_sum
-        #futures_guranties = 1.5 * 0.15  # max futures_guranties
-        available_cash = 1 - futures_guranties
+        futures_guaranties=0.20*no_cash_pos_sum
+        available_cash = 1 - futures_guaranties
         positions['cash'] = positions['cash'].clip(upper=available_cash)
 
     return positions
