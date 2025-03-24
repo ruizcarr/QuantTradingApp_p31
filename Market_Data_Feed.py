@@ -17,7 +17,7 @@ qs.extend_pandas()
 from arch import arch_model
 from sklearn.metrics import r2_score
 
-from Euribor_Download import get_euribor_1y_daily
+from Interest_Rates_Download import get_euribor_1y_daily,get_fed_1year_treasury_yield_daily
 
 from utils import sigmoid
 
@@ -76,7 +76,7 @@ class Data:
 
         #Add Next Days for Trading
         if add_days>0:
-            self.add_next_days(add_days)
+            self.add_next_days_random_pct(add_days)
 
         # Get Close Prices from data_bundle in the order of tickers
         #self.tickers_closes = pd.DataFrame(data=np.asarray([self.data_bundle[tic, 'Close'] for tic in tickers]).T, columns=tickers, index=self.data_bundle.index)
@@ -329,7 +329,100 @@ class Data:
         next_days_data.index=next_days_range
         next_days_data.loc[:,] = [np.asarray(self.data_bundle.loc[last_day,])]
         self.data_bundle=pd.concat([self.data_bundle,next_days_data],axis=0)
-        # Replace returns values of futures at expiration_dates by cash returns where available
+
+    def add_next_days_random(self, num_future_days, seed=40):
+        """
+        Extends self.data_bundle with random values based on the mean and standard deviation of the last 20 calendar days,
+        generating random values for the *added* business days. The future DataFrame has the same columns as self.data_bundle.
+
+        Args:
+            self: The class instance with a data_bundle attribute (Pandas DataFrame with DatetimeIndex).
+            num_future_days (int, optional): The number of future business days to add. Defaults to 5.
+            seed (int, optional): The seed for the random number generator. Defaults to 42.
+
+        Raises:
+            ValueError: If self.data_bundle is not a DataFrame with a DatetimeIndex or has fewer than 20 rows.
+        """
+        if not isinstance(self.data_bundle.index, pd.DatetimeIndex):
+            raise ValueError("self.data_bundle index must be a DatetimeIndex.")
+
+        lookback=10
+        if len(self.data_bundle) < lookback:
+            raise ValueError("self.data_bundle must contain at least 20 rows to calculate mean and std.")
+
+        last_days = self.data_bundle.iloc[-lookback:]
+        last_days_mean = last_days.mean()
+        last_days_std = last_days.std()
+
+        last_business_day = self.data_bundle.index[-1]
+        future_dates = pd.bdate_range(start=last_business_day, periods=num_future_days + 1, inclusive='right')
+
+        np.random.seed(seed)
+        random_values = np.random.normal(last_days_mean.values, last_days_std.values, size=(num_future_days, len(self.data_bundle.columns)))
+
+        future_df = pd.DataFrame(random_values, index=future_dates, columns=self.data_bundle.columns)
+
+        self.data_bundle = pd.concat([self.data_bundle, future_df])
+
+    def add_next_days_random_pct(self, num_future_days, seed=40):
+        """
+        Extends self.data_bundle with random percentage changes using cumprod.
+
+        Args:
+            ... (same as before)
+        """
+        if not isinstance(self.data_bundle.index, pd.DatetimeIndex):
+            raise ValueError("self.data_bundle index must be a DatetimeIndex.")
+
+        lookback = 20
+        if len(self.data_bundle) < lookback:
+            raise ValueError(f"self.data_bundle must contain at least {lookback} rows to calculate mean and std.")
+
+        last_days = self.data_bundle.iloc[-lookback:].copy()
+        last_days_pct = last_days.pct_change()
+        last_days_pct = last_days_pct.iloc[1:]  # remove first row.
+        last_days_pct_mean = last_days_pct.mean()
+        last_days_pct_std = last_days_pct.std()
+
+        last_business_day = self.data_bundle.index[-1]
+        future_dates = pd.bdate_range(start=last_business_day, periods=num_future_days + 1, inclusive='right')
+
+        np.random.seed(seed)
+        random_values_pct = np.random.normal(last_days_pct_mean.values, last_days_pct_std.values, size=(num_future_days, len(self.data_bundle.columns)))
+
+        last_values = self.data_bundle.iloc[-1].values
+
+        cum_prod = (1 + random_values_pct).cumprod(axis=0)
+        future_values = last_values * cum_prod
+
+        future_df = pd.DataFrame(future_values, index=future_dates, columns=self.data_bundle.columns)
+
+        # Replace Non Close columns with close
+        future_df = future_df.apply(pd.to_numeric, errors='coerce')  # convert to numeric.
+
+        for ticker in future_df.columns.get_level_values(0).unique():
+            close_col = (ticker, 'Close')
+            if close_col in future_df.columns:
+                close_values = future_df[close_col].values
+
+                # Fill any NaN values in close_values
+                nan_mask = np.isnan(close_values)
+                if np.any(nan_mask):
+                    mean_val = np.nanmean(close_values)
+                    close_values[nan_mask] = mean_val
+
+                other_cols = [col for col in future_df.columns if col[0] == ticker and col[1] != 'Close']
+
+                # Explicit Loop-Based Assignment
+                for row_index, row in future_df.iterrows():
+                    close_val = close_values[future_df.index.get_loc(row_index)]
+                    for col in other_cols:
+                        try:
+                            future_df.loc[row_index, col] = close_val
+                        except Exception as e:
+                            print(f"Error assigning {close_val} to {row_index}, {col}: {e}")
+
+        self.data_bundle = pd.concat([self.data_bundle, future_df])
 
     def data_dict_sanitize_OHL(self, data_dict):
 
@@ -508,7 +601,7 @@ class Indicators:
         self.rsi_sigmoid_weight=self.rsi_sigmoid(self.rsi)
 
         #Euribor Indicator Weights
-        from EuriborStudy import get_Euribor_ind
+        from EuriborCorrStudy import get_Euribor_ind
         # Retrieve Training model and get Euribor Ind
         Euribor_series = tickers_returns['cash'] * 255 * 100
         self.Euribor_ind = get_Euribor_ind(Euribor_series)
@@ -516,11 +609,10 @@ class Indicators:
         # Combined Weights
         self.comb_weights = self.rsi_reverse_keep_weights * self.norm_weights * self.exp_weights*self.Euribor_ind #* self.rsi_sigmoid_weight * m_trend_weights #* trend_corr_high#  * rsi_weights * chopp_factor #* boll_pct_weights
         self.comb_weights['cash'] = self.Euribor_ind['cash']
-        #self.comb_weights = self.comb_weights/3.25
-        #self.comb_weights = self.comb_weights / 2
-
         self.comb_weights =self.comb_weights.clip(upper=2.5,lower=0)
 
+        #Get US FED Interest Rates
+        #self.fed_df = get_fed_1year_treasury_yield_daily().reindex(tickers_returns.index, method="ffill")
 
 
         #Store indicators in a dict
@@ -541,6 +633,7 @@ class Indicators:
             'rsi_high_keep': self.rsi_high_keep,
             'rsi_reverse_keep_weights': self.rsi_reverse_keep_weights,
             'comb_weights': self.comb_weights,
+            #'FED_rates': self.fed_df,
         }
 
     def kelly(self, closes, len=14,returns=False):

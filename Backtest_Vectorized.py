@@ -77,9 +77,9 @@ def compute_backtest_vectorized(weights, settings, data_dict):
             q_title = 'Cash Backtest Markowitz Vectorized'
             path = "results\\"
             q_filename = os.path.abspath(path+ q_title + '.html')
-            q_returns = bt_log_dict['portfolio_value_eur'].pct_change()
+            q_returns = bt_log_dict['portfolio_value_eur'].pct_change().iloc[:-settings['add_days']]
             q_benchmark_ticker='ES=F'
-            q_benchmark = (closes[q_benchmark_ticker]*exchange_rate).pct_change()
+            q_benchmark = (closes[q_benchmark_ticker]*exchange_rate).pct_change().iloc[:-settings['add_days']]
 
             quantstats.reports.html(q_returns, title=q_title,benchmark=q_benchmark,benchmark_title=q_benchmark_ticker,output=q_filename) #
             webbrowser.open(q_filename)
@@ -187,7 +187,7 @@ def   compute_backtest(weights_div_asset_price,asset_price,opens,highs,lows,clos
     tickers_df.loc[:,:]=tickers
 
     #Buy Orders
-    is_buy=(target_trade_size>0) & exposition_is_low # buy_trigger #
+    is_buy=(target_trade_size>0) & exposition_is_low # & buy_trigger
     B_S.where(~is_buy, 'Buy', inplace=True)
     exectype.where(~is_buy, 'Market', inplace=True) # Buy Order allways Market at Open Price
 
@@ -615,6 +615,7 @@ def compute_buy_sell_triggers(weights,lows, highs):
     weights_min = weights.shift(2).rolling(5).min()
     weights_up = weights.shift(1).gt(weights_min, axis=0)
 
+
     # Lows Uptrend --> Yesterday low > previous 5 days lowest
     lows_min = lows.shift(1).rolling(5).min()
     lows_up = lows.shift(1).ge(lows_min, axis=0)
@@ -626,6 +627,7 @@ def compute_buy_sell_triggers(weights,lows, highs):
     # Buy Trigger
     # Yesterday low > previous 5 days lowest
     # & Yesterday weight > previous 5 days lowest weight
+    # Next five days Positive Weight evolution
     buy_trigger = lows_up & weights_up
 
     # Sell Trigger

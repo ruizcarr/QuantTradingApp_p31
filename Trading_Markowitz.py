@@ -65,9 +65,9 @@ def compute(settings):
         eod_log_history, trading_history= process_log_data(log_history,settings)
 
         if verbose:
-            print("tickers_closes\n", data.tickers_closes[:-5].tail(10))
+            print("tickers_closes\n", data.tickers_closes.tail(15))#[:-5]
 
-            print("tickers_returns\n", tickers_returns[:-5].tail(10))
+            print("tickers_returns\n", tickers_returns.tail(15))#[:-5]
 
             print("positions\n", positions.tail(15))
 

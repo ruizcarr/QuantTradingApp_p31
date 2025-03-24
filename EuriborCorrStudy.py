@@ -94,6 +94,8 @@ def get_trained_Euribor_weigths(tickers_returns,folder_path="trained_models", fi
     #Get Euribor Metrics
     Euribor_metrics=get_Euribor_metrics(Euribor_series)
 
+    print('Euribor_metrics',Euribor_metrics)
+
     #Compute Regresion
     #regr_df=Euribor_metrics[['Euribor_is_high','Euribor_is_mid','Euribor_is_low','Euribor_down','Euribor_up']] #'Euribor_is_not_low','Euribor_is_not_high','Euribor_not_fast_up'
 
@@ -102,23 +104,25 @@ def get_trained_Euribor_weigths(tickers_returns,folder_path="trained_models", fi
     print('corr_matrix',corr_matrix)
 
     #Create Euribor_weights
+
+    #Keep Only Positive Values
     Euribor_weights = corr_matrix.clip(0)
+
+    #Normalize by sum
     Euribor_weights = Euribor_weights/Euribor_weights.sum()
 
-    if True:
-        print('non zero sum corr_matrix',Euribor_weights.sum())
-        non_zero_mean_corr_matrix=Euribor_weights.replace(0, np.nan).mean()
-        print('non zero mean corr_matrix', non_zero_mean_corr_matrix)
-        non_zero_meanofmean_wo_cash_corr_matrix=non_zero_mean_corr_matrix.drop('cash',axis=0).mean()
-        print('non zero mean mean wo cash corr_matrix', non_zero_meanofmean_wo_cash_corr_matrix)
+    #Normalyze by non_zero_maxofmean_wo_cash_Euribor_weights
+    non_zero_mean_corr_matrix=Euribor_weights.replace(0, np.nan).mean()
+    non_zero_meanofmean_wo_cash_corr_matrix=non_zero_mean_corr_matrix.drop('cash',axis=0).mean()
+    Euribor_weights = Euribor_weights / non_zero_meanofmean_wo_cash_corr_matrix
+    non_zero_maxofmean_wo_cash_Euribor_weights=Euribor_weights.replace(0, np.nan).mean().drop('cash',axis=0).max()
+    Euribor_weights = Euribor_weights /non_zero_maxofmean_wo_cash_Euribor_weights
 
-        Euribor_weights = Euribor_weights / non_zero_meanofmean_wo_cash_corr_matrix
-        non_zero_maxofmean_wo_cash_Euribor_weights=Euribor_weights.replace(0, np.nan).mean().drop('cash',axis=0).max()
-        print('non_zero_meanofmean_wo_cash_Euribor_weights',non_zero_maxofmean_wo_cash_Euribor_weights)
-        Euribor_weights = Euribor_weights /non_zero_maxofmean_wo_cash_Euribor_weights
+    print('non zero sum corr_matrix', Euribor_weights.sum())
+    print('non zero mean corr_matrix', non_zero_mean_corr_matrix)
+    print('non zero mean mean wo cash corr_matrix', non_zero_meanofmean_wo_cash_corr_matrix)
+    print('non_zero_meanofmean_wo_cash_Euribor_weights', non_zero_maxofmean_wo_cash_Euribor_weights)
 
-    else:
-        Euribor_weights = Euribor_weights / Euribor_weights.sum()
 
     # Construct the full file path
     file_path = os.path.join(folder_path, filename)
@@ -172,19 +176,16 @@ def get_Euribor_ind(Euribor_series):
     #Keep yesterday value
     Euribor_ind = Euribor_ind.shift(1)
 
-    if True:
-        #Set index around 1
-        Euribor_ind_mean=Euribor_ind.mean()
-        Euribor_ind=1+(Euribor_ind/2.1-Euribor_ind_mean)
+    #Set index around 1
+    Euribor_ind_mean=Euribor_ind.mean()
+    Euribor_ind=1+(Euribor_ind/2.1-Euribor_ind_mean)
 
-        #Add factor to all values
-        Euribor_ind = Euribor_ind + 0.2  # 0.4 #0.25 & 1.5 with cash 0.5
+    #Add factor to all values
+    Euribor_ind = Euribor_ind + 0.2  # 0.4 #0.25 & 1.5 with cash 0.5
 
-        #Set Cash Mean to one
-        Euribor_ind['cash'] = Euribor_ind['cash']/Euribor_ind['cash'].mean()
+    #Set Cash Mean to one
+    Euribor_ind['cash'] = Euribor_ind['cash']/Euribor_ind['cash'].mean()
 
-    else:
-        Euribor_ind = Euribor_ind +  0.4 #0.25 & 1.5 with cash 0.5
 
     #Keep only positive values
     Euribor_ind = Euribor_ind.clip(lower=0)
