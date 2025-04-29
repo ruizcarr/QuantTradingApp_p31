@@ -19,7 +19,7 @@ settings={
     'add_cash':True,
 
     #Settings for Portfolio Optimization
-    #'tickers_bounds': {'ES=F': (0,0.5), 'NQ=F': (-0,0.5), 'GC=F': (0.00,0.5), 'CL=F': (0,1), 'EURUSD=X': (-0,0.0),'cash':(0,0.10)},  # Default Weights Bounds Upper Limit for Each asset at optimization {'ES=F': 0.50, 'NQ=F': 0.50, 'GC=F': 0.50, 'EURUSD=X': 0.25, 'CL=F': 0.25}
+    #'tickers_bounds': {'ES=F': (0,0.25), 'NQ=F': (-0,0.25), 'GC=F': (0.00,0.5), 'CL=F': (0,0.1), 'EURUSD=X': (-0,0.0),'cash':(0,0.30)},  # Default Weights Bounds Upper Limit for Each asset at optimization {'ES=F': 0.50, 'NQ=F': 0.50, 'GC=F': 0.50, 'EURUSD=X': 0.25, 'CL=F': 0.25}
     'tickers_bounds': {'ES=F': (-0.0, 0.0), 'NQ=F': (-0, 0.5), 'GC=F': (0.00, 0.5), 'CL=F': (0, 0.1), 'EURUSD=X': (-0.00, 0.0), 'cash': (0, 0.3)},
     'volatility_target': 0.110,#0.110,  #0.113, # 0.135, #0.124,  # 0.125,  # 0.135,  # 0.24#0.115
 
@@ -34,10 +34,10 @@ settings={
     #Exposition Constraints
     'w_sum_max': 2.5,  # Max sum of weights at markovitz calc
     'exposition_lim': 2.5, #2.5, Max exposition allowed aka Max strategy_pos sum. When no futures set to 1
-    'w_upper_lim': 1.0,  #0.9, #  Individual Upper Weight Limit
+    'w_upper_lim': 0.75,  #0.66, #1.0,  #0.9, #  Individual Upper Weight Limit
     'w_lower_lim': -0.1,  # Individual Lower Weight Limit
     'pos_exp_factor': 1.05, #1.05 # Position Exponential factor; positions = positions ** settings['pos_exp_factor']
-    'pos_mult_factor': 1.25, #1.15 # Position Multiplicative factor; positions = positions * settings['pos_mult_factor']
+    'pos_mult_factor': 1.5, #1.25, #1.15 # Position Multiplicative factor; positions = positions * settings['pos_mult_factor']
     'apply_pos_consraints': True,
 
     #Markowitz Windows Parameters [fast,mid,slow]
