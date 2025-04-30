@@ -159,6 +159,12 @@ def   compute_backtest(weights_div_asset_price,asset_price,opens,highs,lows,clos
 
     #Compute Target Size of number of contracts
     target_size_raw = weights_div_asset_price.multiply(portfolio_to_invest, axis=0).fillna(0)
+
+    #Upgrade target_size to 1 when target_size is over treshold
+    upgrade_treshold=0.20
+    target_size_raw[target_size_raw > upgrade_treshold] = target_size_raw.clip(lower=1)
+
+    #Round to get Target Number of Contracts
     target_size = round(target_size_raw,0).astype(int)
 
     #Target Trade Size

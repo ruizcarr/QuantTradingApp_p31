@@ -36,8 +36,8 @@ settings={
     'exposition_lim': 2.5, #2.5, Max exposition allowed aka Max strategy_pos sum. When no futures set to 1
     'w_upper_lim': 0.75,  #0.66, #1.0,  #0.9, #  Individual Upper Weight Limit
     'w_lower_lim': -0.1,  # Individual Lower Weight Limit
-    'pos_exp_factor': 1.05, #1.05 # Position Exponential factor; positions = positions ** settings['pos_exp_factor']
-    'pos_mult_factor': 1.5, #1.25, #1.15 # Position Multiplicative factor; positions = positions * settings['pos_mult_factor']
+    'pos_exp_factor': 1.00, #1.05 # Position Exponential factor; positions = positions ** settings['pos_exp_factor']
+    'pos_mult_factor': 1.5, #1.5, #1.25, #1.15 # Position Multiplicative factor; positions = positions * settings['pos_mult_factor']
     'apply_pos_consraints': True,
 
     #Markowitz Windows Parameters [fast,mid,slow]
