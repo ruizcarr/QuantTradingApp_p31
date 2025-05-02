@@ -82,8 +82,9 @@ def main(settings):
 
             #Debug
             # Get Data & Indicators
-            data_ind = mdf.Data_Ind_Feed(settings).data_ind
-            data, indicators_dict = data_ind
+            data_ind_instance = mdf.Data_Ind_Feed(settings)
+            data_ind_tuple=data_ind_instance.data_ind
+            data, indicators_dict = data_ind_tuple
             tickers_returns = data.tickers_returns
             data_dict = data.data_dict
             st.write(tickers_returns)
