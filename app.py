@@ -21,8 +21,6 @@ from Trading_Markowitz import compute,process_log_data
 
 from config.trading_settings import settings
 
-st.write(settings)
-
 #For Local Run bellow in the pycharm terminal
 #streamlit run app.py
 #Ctrl + c to stop
