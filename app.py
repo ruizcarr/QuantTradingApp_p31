@@ -21,6 +21,8 @@ from Trading_Markowitz import compute,process_log_data
 
 from config.trading_settings import settings
 
+st.write(settings)
+
 #For Local Run bellow in the pycharm terminal
 #streamlit run app.py
 #Ctrl + c to stop
@@ -81,7 +83,7 @@ def main(settings):
          # Compute data if it's not already in session state
         if st.session_state.data is None:
             #st.write("Computing data...")
-            log_history, _, data = compute(settings)  # Replace with your compute function
+            log_history, _, data = compute(settings)
             st.session_state.data = (log_history, data)  # Store the results
 
         # Get data
