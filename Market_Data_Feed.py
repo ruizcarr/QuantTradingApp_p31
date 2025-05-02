@@ -149,10 +149,10 @@ class Data:
         # Get Data Bundle from yf
         tickers_space_sep = " ".join(tickers)
 
-        #data_bundle = yf.download(tickers_space_sep, start, end, group_by='ticker', progress=False)
+        data_bundle = yf.download(tickers_space_sep, start, end, group_by='ticker', progress=False)
 
         #Alternate to avoid problems in stremlit
-        data_bundle,_=download_data_ticker_by_ticker(tickers, start, end, delay_seconds=1, max_retries=5)
+        #data_bundle,_=download_data_ticker_by_ticker(tickers, start, end, delay_seconds=1, max_retries=5)
 
         data_bundle=data_bundle.dropna()
 
@@ -614,7 +614,7 @@ class Indicators:
         self.Euribor_ind = get_Euribor_ind(Euribor_series)
 
         # Combined Weights
-        self.comb_weights = self.rsi_reverse_keep_weights * self.norm_weights * self.exp_weights*self.Euribor_ind #* self.rsi_sigmoid_weight * m_trend_weights #* trend_corr_high#  * rsi_weights * chopp_factor #* boll_pct_weights
+        self.comb_weights =  self.rsi_reverse_keep_weights * self.norm_weights *self.Euribor_ind # * self.exp_weights * self.rsi_sigmoid_weight * m_trend_weights #* trend_corr_high#  * rsi_weights * chopp_factor #* boll_pct_weights
         self.comb_weights['cash'] = self.Euribor_ind['cash']
         self.comb_weights =self.comb_weights.clip(upper=2.5,lower=0)
 
@@ -699,7 +699,11 @@ class Indicators:
 
         # Set value around 1
         #self.rsi_weights = 1.5-self.rsi_high_keep
-        self.rsi_weights = (1.324 - 1.136*self.rsi_high_keep)*1.3
+        mid=1.324
+        amp= 1 #1.136
+        mult=1.3
+        self.rsi_weights = ((mid - amp*self.rsi_high_keep)*mult).clip(lower=0)
+
         return self.rsi_weights
 
 

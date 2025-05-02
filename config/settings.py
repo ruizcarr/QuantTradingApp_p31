@@ -11,7 +11,7 @@ from datetime import timedelta
 settings={
 
     #Settings for Data Feed
-    'tickers': [ 'ES=F','NQ=F', 'GC=F', 'EURUSD=X'],#'CL=F',
+    'tickers': [ 'ES=F','NQ=F', 'GC=F','CL=F', 'EURUSD=X'],#
     'start': '1996-01-01',#TRADING#'2019-01-01' #TRAINING#'1996-01-01'
     'end':  (date.today() + timedelta(days=1)).isoformat(),  #'2023-04-01',# '2023-01-18',# '2004-01-18',#
     'add_days': 5,  # Additional Business days for next days position estimation
@@ -58,7 +58,7 @@ settings={
 
     #Post Opt Parameters
     'apply_post_opt': True,  # Calculate Post Optimization and get post_factor
-    'trading_volatility_delta': -0.02,  # trading_volatility_target= volatility_target + trading_volatility_delta
+    'trading_volatility_delta': -0.02,  # -0.02,  # trading_volatility_target= volatility_target + trading_volatility_delta
     'volatility_factor_diff_delta': {'up':1,'dn':1},#0.25,  # .25 #volatility_factor maximum abs diff
     'vol_factor_max': 8.0, #2.0 #1.85 #1.65, #1.75
 

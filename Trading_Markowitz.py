@@ -89,8 +89,37 @@ def compute(settings,data_ind):
         plot_df['sum'] = plot_df.sum(axis=1)
         plot_df['cum_ret'] = (1 + eod_log_history['portfolio_value_eur'].pct_change()).cumprod() - 1
         plot_df.plot(title='positions')
+
         if settings['do_BT']:
-            eod_log_history[positions.columns].plot(title='n_contracts')
+            nc=eod_log_history[positions.columns]
+            nc.plot(title='n_contracts')
+
+            tickers_returns=data.tickers_returns
+            tickers_returns =tickers_returns.reindex(nc.index)
+            returns=nc * tickers_returns
+            cum_ret_by_ticker=(1+returns).cumprod()
+            tickers_cumret=(1+tickers_returns).cumprod()
+
+            rsi_reverse_keep_weights=indicators_dict['rsi_reverse_keep_weights'].reindex(nc.index)
+            comb_weights = indicators_dict['comb_weights'].reindex(nc.index)
+            norm_weights = indicators_dict['norm_weights'].reindex(nc.index)
+            trend_corr_high = indicators_dict['trend_corr_high'].reindex(nc.index)
+
+            plot_df2=pd.DataFrame()
+            for col in nc.columns:
+                plot_df2['nc']=nc[col]
+                plot_df2['cum_ret'] = cum_ret_by_ticker[col]
+                plot_df2['ticker_cumret'] = tickers_cumret[col]
+                plot_df2['rsi_reverse_keep_weights'] = rsi_reverse_keep_weights[col]
+                #plot_df2['comb_weights'] = comb_weights[col]
+                #plot_df2['norm_weights'] = norm_weights[col]
+                plot_df2['trend_corr_high'] = trend_corr_high[col]
+                plot_df2.plot(title=col + ' Returns')
+
+
+            #cum_ret_by_ticker.plot(title='cum_ret_by_ticker')
+
+
 
     if settings['verbose']:
         plt.show()
