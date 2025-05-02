@@ -16,10 +16,9 @@ import sys
 import os
 
 from check_password import check_password
-
 from Trading_Markowitz import compute,process_log_data
-
 from config.trading_settings import settings
+import Market_Data_Feed as mdf
 
 #For Local Run bellow in the pycharm terminal
 #streamlit run app.py
@@ -80,6 +79,15 @@ def main(settings):
 
          # Compute data if it's not already in session state
         if st.session_state.data is None:
+
+            #Debug
+            # Get Data & Indicators
+            data_ind = mdf.Data_Ind_Feed(settings).data_ind
+            data, indicators_dict = data_ind
+            tickers_returns = data.tickers_returns
+            data_dict = data.data_dict
+            st.write(tickers_returns)
+
             #st.write("Computing data...")
             log_history, _, data = compute(settings)
             st.session_state.data = (log_history, data)  # Store the results
