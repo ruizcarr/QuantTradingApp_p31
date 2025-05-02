@@ -16,6 +16,8 @@ import quantstats as qs
 qs.extend_pandas()
 from arch import arch_model
 from sklearn.metrics import r2_score
+import time
+import random
 
 from Interest_Rates_Download import get_euribor_1y_daily,get_fed_1year_treasury_yield_daily
 from utils import sigmoid
@@ -88,7 +90,6 @@ class Data:
             if tick in self.data_bundle.columns  # Check if ticker exists!
         }
 
-
         if start < self.data_bundle.index[0].isoformat():  # if start requested is older than available data
             self.extended_data(self.data_dict, start)
 
@@ -147,12 +148,16 @@ class Data:
 
         # Get Data Bundle from yf
         tickers_space_sep = " ".join(tickers)
-        data_bundle = yf.download(tickers_space_sep, start, end, group_by='ticker', progress=False).dropna()
+
+        #data_bundle = yf.download(tickers_space_sep, start, end, group_by='ticker', progress=False)
+
+        #Alternate to avoid problems in stremlit
+        data_bundle,_=download_data_ticker_by_ticker(tickers, start, end, delay_seconds=1, max_retries=5)
+
+        data_bundle=data_bundle.dropna()
 
         if len(data_bundle) ==0:
             raise ValueError("self.data_bundle is empty. Error at yahoo download")
-
-        #print('data_bundle',data_bundle)
 
         # Convert the index to naive timestamps (no timestamps)
         data_bundle.index = data_bundle.index.tz_localize(None)
@@ -178,7 +183,6 @@ class Data:
 
         #Save for further use
         self.data_bundle = data_bundle
-
 
     def extended_data(self, data_dict, start):
         """Extend with  Historical Data if requested """
@@ -1440,7 +1444,156 @@ def add_cash_to_data_bundle(data_bundle, cash_rate):
     return data_bundle_with_cash
 
 
+def download_data_ticker_by_ticker(tickers_list, start_date, end_date, delay_seconds=1, max_retries=5):
+    """
+        Downloads data for a list of tickers, one by one, with retries and delays.
+        Ensures the consolidated DataFrame has a (Ticker, Price) MultiIndex columns.
+        Returns the consolidated multilevel DataFrame and a status message.
+        """
+    all_tickers_data = {}
+    failed_tickers_download = []
+    base_delay = delay_seconds  # seconds
 
+    #print(f"Starting data download for: {tickers_list}")
+
+    for i, ticker in enumerate(tickers_list):
+        #print(f"Attempting to download {ticker} ({i + 1}/{len(tickers_list)})...")
+        ticker_downloaded_successfully = False
+
+        for attempt in range(max_retries):
+            try:
+                # Download data for a single ticker
+                ticker_data = yf.download(ticker, start=start_date, end=end_date, progress=False)
+
+                if not ticker_data.empty:
+                    all_tickers_data[ticker] = ticker_data  # Store the data as received
+                    #print(f"Successfully downloaded {ticker} on attempt {attempt + 1}")
+                    ticker_downloaded_successfully = True
+                    break  # Exit retry loop for this ticker
+                else:
+                    print(f"Download returned empty data for {ticker} on attempt {attempt + 1}. Retrying...")
+                    time.sleep(base_delay * (attempt + 1) + random.uniform(0, 1))
+
+
+            except Exception as e:  # Catching a general exception during download (includes YFRateLimitError)
+                print(f"An error occurred downloading {ticker} on attempt {attempt + 1}: {e}. Retrying...")
+                time.sleep(base_delay * (attempt + 1) + random.uniform(0, 1))
+
+        if not ticker_downloaded_successfully:
+            print(f"Failed to download data for {ticker} after {max_retries} attempts.")
+            failed_tickers_download.append(ticker)
+
+        # Add a delay between requests for different tickers
+        if i < len(tickers_list) - 1 and ticker_downloaded_successfully:
+            time.sleep(delay_seconds)
+        elif i < len(tickers_list) - 1 and not ticker_downloaded_successfully:
+            # Shorter delay if a ticker failed to move to the next faster
+            time.sleep(delay_seconds / 2)
+
+    print("Finished data download attempts.")
+
+    # --- Consolidate the data into a single Multilevel DataFrame with (Ticker, Price) Columns ---
+    if not all_tickers_data:
+        status_message = f"Failed to download data for all tickers: {', '.join(failed_tickers_download)}"
+        return pd.DataFrame(), status_message
+
+    dfs_to_concat = []
+    tickers_consolidated = []
+    failed_tickers_consolidation = []  # Keep track of tickers that failed during consolidation
+
+    for ticker, df in all_tickers_data.items():
+        try:
+            processed_df = df.copy()  # Work on a copy to avoid modifying original downloaded data
+
+            # Ensure the columns for this ticker are in the (Ticker, Price) MultiIndex format
+            if isinstance(processed_df.columns, pd.MultiIndex):
+                # If it's already a MultiIndex, check and enforce the (Ticker, Price) order
+                # Assume the levels are Ticker and Price, but their order or names might be inconsistent
+                if processed_df.columns.nlevels == 2:
+                    # If there are exactly two levels, check if the names suggest a different order
+                    # Based on your previous output, (Price, Ticker) had names ['Price', 'Ticker']
+                    if processed_df.columns.names == ['Price', 'Ticker']:
+                        processed_df.columns = processed_df.columns.swaplevel(0, 1)
+                        processed_df.columns.names = ['Ticker', 'Price']  # Assign standard names
+                        #print(f"Swapped column levels to (Ticker, Price) for {ticker}")
+                    else:
+                        # Assume it's already in (Ticker, Price) order or needs naming
+                        processed_df.columns.names = ['Ticker', 'Price']  # Assign standard names
+                        #print(f"Using existing MultiIndex columns (assuming Ticker, Price) for {ticker}")
+                else:
+                    print(f"Warning: Unexpected number of MultiIndex levels ({processed_df.columns.nlevels}) for ticker {ticker}. Skipping consolidation.")
+                    failed_tickers_consolidation.append(ticker)
+                    continue  # Skip concatenation for this ticker
+
+
+            elif isinstance(processed_df.columns, pd.Index):
+                # If it's a simple Index (the usual case for single ticker download),
+                # create the MultiIndex columns in (Ticker, Price) order and assign names
+                cols = pd.MultiIndex.from_product([[ticker], processed_df.columns], names=['Ticker', 'Price'])
+                processed_df.columns = cols
+                #print(f"Created MultiIndex columns (Ticker, Price) for {ticker}")
+            else:
+                print(f"Warning: Unexpected column type for ticker {ticker}: {type(processed_df.columns)}. Skipping consolidation.")
+                failed_tickers_consolidation.append(ticker)
+                continue  # Skip concatenation for this ticker
+
+            # Add the processed DataFrame to the list for concatenation
+            dfs_to_concat.append(processed_df)
+            tickers_consolidated.append(ticker)
+
+
+        except Exception as e:
+            print(f"Error processing columns for ticker {ticker}: {e}. Skipping ticker in consolidation.")
+            failed_tickers_consolidation.append(ticker)
+
+    # Check if we have any DataFrames to concatenate after processing
+    if not dfs_to_concat:
+        status_message = "No valid data available for consolidation after download attempts."
+        all_failed_tickers = list(set(failed_tickers_download + failed_tickers_consolidation))
+        if all_failed_tickers:
+            status_message += f" Failures included: {', '.join(all_failed_tickers)}"
+        return pd.DataFrame(), status_message
+
+    try:
+        # Concatenate the DataFrames along the columns axis
+        # This results in the desired multilevel DataFrame with (Ticker, Price) columns
+        consolidated_data = pd.concat(dfs_to_concat, axis=1)
+        # Apply dropna(how='all') similar to your original code
+        consolidated_data = consolidated_data.dropna(how='all')
+
+        # Optional: Localize timezone if needed (assuming DatetimeIndex)
+        # Only attempt if the index is a DatetimeIndex and is timezone-aware
+        if isinstance(consolidated_data.index, pd.DatetimeIndex) and consolidated_data.index.tz is not None:
+            print("Localizing timezone of index to None.")
+            consolidated_data.index = consolidated_data.index.tz_localize(None)
+
+
+    except Exception as e:
+        print(f"Error during final concatenation or dropna: {e}")
+        status_message = f"Error consolidating data: {e}"
+        all_failed_tickers = list(set(failed_tickers_download + failed_tickers_consolidation))
+        if all_failed_tickers:
+            status_message += f" Individual ticker failures: {', '.join(all_failed_tickers)}"
+        return pd.DataFrame(), status_message
+
+    # --- Final Status Message ---
+    downloaded_count = len(all_tickers_data)
+    consolidated_count = len(tickers_consolidated)
+    total_tickers = len(tickers_list)
+    all_failed_tickers = list(set(failed_tickers_download + failed_tickers_consolidation))
+    failed_count = len(all_failed_tickers)
+
+    status_message = f"Download attempted for {total_tickers} tickers. "
+    if consolidated_count > 0:
+        status_message += f"Successfully consolidated data for {consolidated_count} tickers."
+        if failed_count > 0:
+            status_message += f" Failed to download/process {failed_count} tickers: {', '.join(all_failed_tickers)}."
+    elif failed_count > 0:
+        status_message += f" Failed to download/process data for all tickers: {', '.join(all_failed_tickers)}."
+    else:
+        status_message += "No tickers processed."
+
+    return consolidated_data, status_message
 
 
 
