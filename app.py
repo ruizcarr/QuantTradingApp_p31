@@ -80,15 +80,6 @@ def main(settings):
          # Compute data if it's not already in session state
         if st.session_state.data is None:
 
-            #Debug
-            # Get Data & Indicators
-            data_ind_instance = mdf.Data_Ind_Feed(settings)
-            data_ind_tuple=data_ind_instance.data_ind
-            data, indicators_dict = data_ind_tuple
-            tickers_returns = data.tickers_returns
-            data_dict = data.data_dict
-            st.write(tickers_returns)
-
             #st.write("Computing data...")
             log_history, _, data = compute(settings)
             st.session_state.data = (log_history, data)  # Store the results
