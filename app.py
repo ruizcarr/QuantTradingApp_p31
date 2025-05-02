@@ -33,8 +33,6 @@ def main(settings):
     #if check_password():
     if True:
 
-
-
         # Initialize session_state values
         chart_len_dict = {'Weekly': 5 + 1, 'Monthly': 22 + 1, 'Quarterly': 3 * 22 + 1}
         if 'chart_len_key' not in st.session_state:
@@ -66,32 +64,31 @@ def main(settings):
         #closes=data.tickers_closes
         #returns=data.tickers_returns
 
+        @st.cache_data(ttl=3600)  # Cache for 1 hour (adjust as needed)
+        def load_and_compute_data(settings):
+            """
+            Fetches raw data and performs computation, with results cached.
+            """
+            st.write("Fetching and computing data...")
+            data_ind = mdf.Data_Ind_Feed(settings).data_ind
+            data, _ = data_ind
 
+            # Assuming compute processes the data_ind output
+            log_history, _ = compute(settings, data_ind)
 
-        # Initialize session state for data
-        if "data" not in st.session_state:
-            st.session_state.data = None
+            # Return all necessary outputs that you want to cache together
+            return data, log_history
 
         if st.button("Refresh App"):
-            st.session_state.data = None  # Clear the data
-            st.rerun()  # This is the best method for cross platform refresh.
+            #st.session_state.data = None  # Clear the data
+            # Clear the cache for the load_and_process_all_data function
+            load_and_compute_data.clear()
+            st.rerun()  # Rerun the app to call the function again and get fresh data
 
-
-         # Compute data if it's not already in session state
-        if st.session_state.data is None:
-
-            #st.write("Computing data...")
-            log_history, _, data = compute(settings)
-            st.session_state.data = (log_history, data)  # Store the results
-
-        # Get data
-        if st.session_state.data:
-            log_history, data = st.session_state.data
-            returns = data.tickers_returns
-            closes = data.tickers_closes
-
-        else:
-            st.write("Click 'Refresh Data' to load data.")
+        # Load data & Compute
+        data, log_history = load_and_compute_data(settings)
+        returns = data.tickers_returns
+        closes = data.tickers_closes
 
 
         #Debug

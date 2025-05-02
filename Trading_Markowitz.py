@@ -26,7 +26,7 @@ from Training_Markowitz import process_log_data,apply_pos_constrain
 # Import Trading Settings
 from config.trading_settings import settings
 
-def compute(settings):
+def compute(settings,data_ind):
 
     start_time = time.time()
 
@@ -34,10 +34,10 @@ def compute(settings):
     verbose=settings['verbose']
 
     # Get Data & Indicators
-    data_ind = mdf.Data_Ind_Feed(settings).data_ind
     data, indicators_dict = data_ind
-    tickers_returns = data.tickers_returns
-    data_dict=data.data_dict
+    #data, indicators_dict =mdf.Data_Ind_Feed(settings).data_ind
+    #tickers_returns = data.tickers_returns
+    #data_dict=data.data_dict
 
 
     # Get Trained Optimized Parameters from csv File
@@ -58,7 +58,7 @@ def compute(settings):
     #Cash BackTest with Backtrader
     if settings['do_BT'] :
         if verbose: print('\nCash BackTest with Backtrader ')
-        _, log_history = compute_backtest_vectorized(positions, settings, data_dict)
+        _, log_history = compute_backtest_vectorized(positions, settings, data.data_dict)
 
         #Get End Of Day Values
         settings['tickers']=list(positions.columns)
@@ -67,7 +67,7 @@ def compute(settings):
         if verbose:
             print("tickers_closes\n", data.tickers_closes.tail(15))#[:-5]
 
-            print("tickers_returns\n", tickers_returns.tail(15))#[:-5]
+            print("tickers_returns\n", data.tickers_returns.tail(15))#[:-5]
 
             print("positions\n", positions.tail(15))
 
@@ -95,7 +95,7 @@ def compute(settings):
     if settings['verbose']:
         plt.show()
 
-    return log_history,positions, data
+    return log_history,positions
 
 def get_orders_log(log_history):
     def print_orders_log(df, title):
@@ -154,4 +154,5 @@ def process_log_data_duplicated(log_history,settings):
 
 
 if __name__ == '__main__':
-    compute(settings)
+    data_ind = mdf.Data_Ind_Feed(settings).data_ind
+    compute(settings,data_ind)

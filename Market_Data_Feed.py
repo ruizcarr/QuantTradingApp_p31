@@ -18,7 +18,6 @@ from arch import arch_model
 from sklearn.metrics import r2_score
 
 from Interest_Rates_Download import get_euribor_1y_daily,get_fed_1year_treasury_yield_daily
-
 from utils import sigmoid
 
 import webbrowser
@@ -153,7 +152,7 @@ class Data:
         if len(data_bundle) ==0:
             raise ValueError("self.data_bundle is empty. Error at yahoo download")
 
-        print('data_bundle',data_bundle)
+        #print('data_bundle',data_bundle)
 
         # Convert the index to naive timestamps (no timestamps)
         data_bundle.index = data_bundle.index.tz_localize(None)
