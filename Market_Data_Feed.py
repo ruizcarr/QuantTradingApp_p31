@@ -150,6 +150,8 @@ class Data:
         tickers_space_sep = " ".join(tickers)
         data_bundle = yf.download(tickers_space_sep, start, end, group_by='ticker', progress=False).dropna()
 
+        if len(self.data_bundle) ==0:
+            raise ValueError("self.data_bundle is empty. Error at yahoo download")
 
         # Convert the index to naive timestamps (no timestamps)
         data_bundle.index = data_bundle.index.tz_localize(None)
